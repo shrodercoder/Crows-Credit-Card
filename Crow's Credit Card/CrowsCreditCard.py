@@ -42,7 +42,10 @@ async def custom_help(ctx):
         "$list [page] - Display 25 unique items per page.\n"
         "$currency - Display current Guild currency amounts.\n"
         "$ca/sa/ea/ga/pa # - Add currency (Copper, Silver, Electrum, Gold, Platinum).\n"
-        "$cr/sr/er/gr/pr # - Remove currency."
+        "$cr/sr/er/gr/pr # - Remove currency.\n"
+        "$wishlist - Display the current wish list.\n"
+        "$addwish [item] - Add an item to the wish list.\n"
+        "$removewish [item] - Remove an item from the wish list.\n"
     )
     await ctx.send(f'```{help_text}```')
 
@@ -108,7 +111,32 @@ async def list_items(ctx, page: int = 1):
         await ctx.send(f'```Guild Bag - {page_info}\n{display}```')
     except Exception as e:
         print(f"Error sending list message: {e}")
-
+@bot.command(name="wishlist")
+async def show_wishlist(ctx):
+    wishlist = inventory.get("wishlist", [])
+    if not wishlist:
+        await ctx.send("The wish list is empty.")
+    else:
+        wishlist_display = "\n".join(wishlist)
+        await ctx.send(f"```Wish List\n{wishlist_display}```")
+@bot.command(name="addwish")
+async def add_to_wishlist(ctx, *, item: str):
+    wishlist = inventory.setdefault("wishlist", [])
+    if item not in wishlist:
+        wishlist.append(item)
+        save_data()
+        await ctx.send(f"Added '{item}' to the wish list.")
+    else:
+        await ctx.send(f"'{item}' is already in the wish list.")
+@bot.command(name="removewish")
+async def remove_from_wishlist(ctx, *, item: str):
+    wishlist = inventory.get("wishlist", [])
+    if item in wishlist:
+        wishlist.remove(item)
+        save_data()
+        await ctx.send(f"Removed '{item}' from the wish list.")
+    else:
+        await ctx.send(f"'{item}' is not in the wish list.")
 @bot.command(name="currency")
 async def show_currency(ctx):
     currency_display = (
